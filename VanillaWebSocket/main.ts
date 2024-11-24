@@ -1,12 +1,16 @@
 import { collectInput } from "./client.ts";
 import ConnectionDetails from "./Models/ConnectionDetails.ts";
 import MsgTypes from "./Models/MsgTypes.ts";
-import Payload from "./Models/Payload.ts";
+import Payload from "./Models/Message.ts";
 import Room from "./Models/Room.ts";
+import { sendMessage } from "./Utils/payloadFunctions.ts";
+import Message from "./Models/Message.ts";
 
-type WebSocketWithUser = WebSocket & ConnectionDetails;
+export type WebSocketWithUser = WebSocket & ConnectionDetails;
 const testToken = "test";
-const rooms: Array<Room> = [];
+let rooms = new Map<string, Room>();
+
+rooms.set("1", new Room("1", "Room 1", ["te", "ta", "to"]));
 
 Deno.serve({ port: 3001 }, (req) => {
   if (req.headers.get("upgrade") === "websocket") {
@@ -24,24 +28,36 @@ Deno.serve({ port: 3001 }, (req) => {
           "Would you like to send txt to client? just type it : "
         );
         socket.send(inppp);
+        console.log(socket.connection_id);
       }
     };
 
     socket.onmessage = (event) => {
-      const msg = JSON.parse(event.data) as Payload;
+      const msg = JSON.parse(event.data) as Message;
+      console.log(msg);
 
       switch (msg.msg_type) {
         case MsgTypes.AUTH:
-          if (msg.payloadMsg === testToken) {
-            socket.authorized = true;
+          if (true) {
+            // if token is valid authorized to true or authorize socet client
+            // socket.authorized = true;
             console.log("Socket authorized");
           }
           break;
         case MsgTypes.MESSAGE:
+          if (rooms.has(msg.room_id)) {
+            // here we somehow have to send msg to all users in room
+            console.log("We Should be here sending msg");
+            console.log(msg);
+
+            // sendMessage(socket, rooms, msg);
+            // socket.send(JSON.stringify(msg.payload));
+            break;
+          }
           break;
         case MsgTypes.CREATE:
           if (!socket.authorized) {
-            rooms.push(new Room(msg.room_id, msg.payloadMsg));
+            rooms.set(msg.room_id, new Room(msg.room_id, msg.payload));
             console.log(rooms);
           }
           break;

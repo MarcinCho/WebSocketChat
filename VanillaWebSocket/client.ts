@@ -1,4 +1,4 @@
-import Payload from "./Models/Payload.ts";
+import Payload from "./Models/Message.ts";
 
 export async function collectInput(prompt: string): Promise<string> {
   console.log(prompt);
@@ -18,7 +18,7 @@ if (import.meta.main) {
     const sender = (await collectInput("Sender: ")).trim();
     const msg_type = (await collectInput("Msg Type: ")).trim();
     const receiver = "test";
-    const payloadMsg = (await collectInput("Message: ")).trim();
+    const payload = (await collectInput("Message: ")).trim();
     const timestamp = new Date().toISOString();
 
     const messageToSend: Payload = {
@@ -27,19 +27,21 @@ if (import.meta.main) {
       sender,
       msg_type,
       receiver,
-      payloadMsg,
+      payload,
       timestamp,
     };
 
-    ws.onopen = function open() {
-      ws.send(JSON.stringify(messageToSend));
-    };
-    ws.onmessage = (e) => {
-      console.log(e.data);
+    ws.onopen = () => {
+      console.log("WebSocket connected");
     };
     ws.onerror = (e) => {
       console.log(e);
     };
+
+    ws.onmessage = (e) => {
+      console.log(e.data);
+    };
+
     ws.onclose = (e) => {
       console.log(e);
     };
