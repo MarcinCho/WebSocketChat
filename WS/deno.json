@@ -1,12 +1,13 @@
 {
   "tasks": {
-    "dev": "deno run -A --watch main.ts",
+    "dev": "deno run -A --env-file=global.env --watch main.ts",
     "client": "deno run -A --watch wsClient.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",
     "@types/ws": "npm:@types/ws@^8.5.13",
     "isomorphic-ws": "npm:isomorphic-ws@^5.0.0",
+    "mongodb": "npm:mongodb@^6.11.0",
     "ws": "npm:ws@^8.18.0"
   }
 }

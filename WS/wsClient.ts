@@ -1,4 +1,4 @@
-import Payload from "./Models/Message.ts";
+import Message from "./Models/Message.ts";
 import WebSocket from "ws";
 
 export async function collectInput(prompt: string): Promise<string> {
@@ -27,7 +27,7 @@ if (import.meta.main) {
       const payload = (await collectInput("Message: ")).trim();
       const timestamp = new Date().toISOString();
 
-      const messageToSend: Payload = {
+      const messageToSend: Message = {
         id: "",
         room_id, // here just add room number and thats it
         sender,
@@ -37,15 +37,16 @@ if (import.meta.main) {
         timestamp,
       };
 
-      ws.on("open", () => {
+      ws.onopen = () => {
         console.log("WebSocket connected");
-      });
+      };
       ws.on("error", (e: any) => {
         console.log(e);
       });
 
-      ws.on("message", (e: any) => {
-        console.log(e);
+      ws.on("message", (data: string) => {
+        const msg = JSON.parse(data) as Message;
+        console.log(msg);
       });
 
       ws.on("close", (e: any) => {
@@ -57,22 +58,26 @@ if (import.meta.main) {
       exit = await collectInput("Would you like to exit? (exit): ");
     }
   } else {
-    while (!exit.includes("exit"))
+    while (!exit.includes("exit")) {
       ws.on("open", () => {
         console.log("WebSocket connected");
       });
-    ws.on("error", (e: any) => {
-      console.log(e);
-    });
+      ws.on("error", (e: any) => {
+        console.log(e);
+      });
 
-    ws.on("message", (e: any) => {
-      console.log(e);
-    });
+      ws.on("message", (data: string) => {
+        const msg = JSON.parse(data) as Message;
+        console.log(msg);
+      });
 
-    ws.on("close", (e: any) => {
-      console.log(e);
-    });
-    exit = await collectInput("Would you like to exit? (exit): ");
+      // Important note take a look how is it sending XD
+
+      ws.on("close", (e: any) => {
+        console.log(e);
+      });
+      exit = await collectInput("Would you like to exit? (exit): ");
+    }
   }
 
   Deno.exit(0);
