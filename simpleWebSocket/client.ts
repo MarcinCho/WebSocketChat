@@ -1,4 +1,6 @@
-import Payload from "./Models/Message.ts";
+import Message from "./main.ts";
+// @deno-types="@types/ws"
+import WebSocket from "ws";
 
 export async function collectInput(prompt: string): Promise<string> {
   console.log(prompt);
@@ -9,11 +11,32 @@ export async function collectInput(prompt: string): Promise<string> {
   return field ? new TextDecoder().decode(buffer.slice(0, field)) : "";
 }
 
-if (import.meta.main) {
-  let exit = "";
-  const ws = new WebSocket("ws://localhost:3001");
+let exit = "";
+const ws = new WebSocket("ws://localhost:3001");
 
-  while (!exit.includes("exit")) {
+const mode = (
+  await collectInput("Would you like to send or receive? (send/receive): ")
+).trim();
+
+ws.on("message", (data: string) => {
+  const msg = JSON.parse(data) as Message;
+  console.log(msg);
+});
+
+ws.onopen = () => {
+  console.log("WebSocket connected");
+};
+ws.onerror = () => {
+  console.log("WebSocket error");
+};
+
+ws.onclose = () => {
+  console.log("WebSocket closed");
+};
+
+while (!exit.includes("exit")) {
+  let messageToSend: Message;
+  if (mode === "send") {
     const room_id = (await collectInput("Room ID: ")).trim();
     const sender = (await collectInput("Sender: ")).trim();
     const msg_type = (await collectInput("Msg Type: ")).trim();
@@ -21,7 +44,7 @@ if (import.meta.main) {
     const payload = (await collectInput("Message: ")).trim();
     const timestamp = new Date().toISOString();
 
-    const messageToSend: Payload = {
+    messageToSend = {
       id: "",
       room_id, // here just add room number and thats it
       sender,
@@ -31,25 +54,9 @@ if (import.meta.main) {
       timestamp,
     };
 
-    ws.onopen = () => {
-      console.log("WebSocket connected");
-    };
-    ws.onerror = (e) => {
-      console.log(e);
-    };
-
-    ws.onmessage = (e) => {
-      console.log(e.data);
-    };
-
-    ws.onclose = (e) => {
-      console.log(e);
-    };
-
     ws.send(JSON.stringify(messageToSend));
-
-    exit = await collectInput("Would you like to exit? (exit): ");
   }
-
-  Deno.exit(0);
+  exit = await collectInput("Would you like to exit? (exit): ");
 }
+
+Deno.exit(0);

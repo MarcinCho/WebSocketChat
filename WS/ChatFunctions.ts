@@ -5,21 +5,21 @@ import MsgTypes from "./Models/MsgTypes.ts";
 import Room from "./Models/Room.ts";
 import { WebSocket, WebSocketServer } from "ws";
 
-export function sendToRoom(
-  message: Message,
-  rooms: Map<string, Room>,
-  ws: WebSocket
-) {
-  if (rooms.has(message.room_id)) {
-    const room = rooms.get(message.room_id);
-    if (room && room.users?.includes(message.sender)) {
-      ws.send(JSON.stringify(message));
-      console.log("Msg Sent from %s", room.name);
-    }
-  } else {
-    ws.send(JSON.stringify("Room not found please create room first"));
-  }
-}
+// export function sendToRoom(
+//   message: Message,
+//   rooms: Map<string, Room>,
+//   ws: WebSocket
+// ) {
+//   if (rooms.has(message.room_id)) {
+//     const room = rooms.get(message.room_id);
+//     if (room && room.users?.includes(message.sender)) {
+//       ws.send(JSON.stringify(message));
+//       console.log("Msg Sent from %s", room.name);
+//     }
+//   } else {
+//     ws.send(JSON.stringify("Room not found please create room first"));
+//   }
+// }
 
 export async function handleMessage(message: Message, wss: WebSocketServer) {
   //Authentication switch something more than simple flag in msg
@@ -58,6 +58,7 @@ async function handleTypeMSG(
   // Maybe in future I will add final types for this type private open broadcats and such but not for now
   if (room) {
     console.log(room); // debuging
+    console.log(message);
     if (room.users.includes(message.sender)) {
       // Checks if the user is in fact the user of the room
       wss.clients.forEach(function each(client: WebSocket) {
