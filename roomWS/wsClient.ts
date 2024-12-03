@@ -17,22 +17,21 @@ const mode = (
   await collectInput("Would you like to send or receive? (send/receive): ")
 ).trim();
 
+const username = await authMSG(ws);
+
 while (!exit.includes("exit")) {
   let messageToSend: Message;
   if (mode === "send") {
     const room_id = (await collectInput("Room ID: ")).trim();
-    const sender = (await collectInput("Sender: ")).trim();
+    const sender = username;
     const msg_type = (await collectInput("Msg Type: ")).trim();
-    const receiver = "test";
     const payload = (await collectInput("Message: ")).trim();
     const timestamp = new Date().toISOString();
 
     messageToSend = {
-      id: "",
       room_id, // here just add room number and thats it
       sender,
       msg_type,
-      receiver,
       payload,
       timestamp,
     };
@@ -55,11 +54,29 @@ while (!exit.includes("exit")) {
     console.log("WebSocket closed");
   };
 
-  // ws.on("close", (e: any) => {
-  //   console.log(e);
-  // });
-
   exit = await collectInput("Would you like to exit? (exit): ");
 }
 
 Deno.exit(0);
+
+async function authMSG(ws: WebSocket) {
+  const username = (await collectInput("Whats your username?: ")).trim();
+  let messageToSend: Message;
+
+  const room_id = "";
+  const sender = username;
+  const msg_type = "AUTH";
+  const payload = username;
+  const timestamp = new Date().toISOString();
+
+  messageToSend = {
+    room_id, // here just add room number and thats it
+    sender,
+    msg_type,
+    payload,
+    timestamp,
+  };
+
+  ws.send(JSON.stringify(messageToSend));
+  return username;
+}

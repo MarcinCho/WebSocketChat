@@ -3,6 +3,7 @@ import * as mongoDB from "mongodb";
 
 export const collections: {
   rooms?: mongoDB.Collection;
+  messages?: mongoDB.Collection;
 } = {}; // here I Should add any other collections I guess
 
 export async function connectToDB() {

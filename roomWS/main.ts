@@ -10,7 +10,6 @@ export const db = connectToDB();
 
 wss.on("connection", (ws: WebSocket) => {
   ws.id = crypto.randomUUID();
-  ws.usenrname = "test";
   console.log(ws.id);
   console.log(
     "WebSocket connected id: %s state %s",
@@ -19,16 +18,8 @@ wss.on("connection", (ws: WebSocket) => {
   );
 
   ws.on("message", (data: Buffer) => {
-    // Buffer is getting send between sockets
     const message = JSON.parse(data.toString("utf-8")) as Message;
-    // console.log(message); // TESTING
 
-    handleMessage(message, wss);
-
-    wss.clients.forEach(function each(client: WebSocket) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(data);
-      }
-    });
+    handleMessage(message, wss, ws);
   });
 });
