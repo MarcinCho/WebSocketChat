@@ -1,3 +1,9 @@
 /KEYS_TEST
 /ToDo
 WS/global.env
+
+*.env
+
+
+*/node_modules
+/node_modules
