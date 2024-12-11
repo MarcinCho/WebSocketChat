@@ -2,13 +2,14 @@ import { Collection, Document } from "mongodb";
 import Message from "../Models/Message.ts";
 import MsgTypes from "../Models/MsgTypes.ts";
 import { WebSocket, WebSocketServer } from "ws";
-import Room from "../Models/Room.ts";
 import db from "../Database/dbConnection.ts";
+import Room from "../Models/Room.ts";
+import { WsWithDetails } from "../Servers/WsServer.ts";
 
 export async function handleMessage(
   message: Message,
   wss: WebSocketServer,
-  ws: WebSocket
+  ws: WsWithDetails
 ) {
   //Authentication switch something more than simple flag in msg
 
@@ -40,7 +41,7 @@ export async function handleMessage(
 async function handleMSG(
   message: Message,
   wss: WebSocketServer,
-  ws: WebSocket,
+  ws: WsWithDetails,
   db_rooms: Collection<Document>,
   db_messages: Collection<Document>
 ) {
@@ -49,16 +50,19 @@ async function handleMSG(
   });
   if (room) {
     if (room.users.includes(message.user_id)) {
-      wss.clients.forEach(function each(client: WebSocket) {
-        if (
-          client.readyState === WebSocket.OPEN &&
-          room.users.includes(client.username) &&
-          client !== ws
-        ) {
-          console.log("Message sent to room");
-          client.send(JSON.stringify(message));
-        }
-      });
+      if (wss && wss.clients) {
+        wss.clients.forEach(function each(client: WsWithDetails) {
+          if (
+            client.readyState === WebSocket.OPEN &&
+            room.users.includes(client.username) &&
+            client !== ws
+          ) {
+            console.log("Message sent to room");
+            client.send(JSON.stringify(message));
+          }
+        });
+      }
+
       db_messages.insertOne(message);
       console.log("Message sent to room");
     }
@@ -72,9 +76,7 @@ async function handleCREATE(msg: Message, db_rooms: Collection<Document>) {
     id: msg.room_id,
   });
   if (!room) {
-    const new_room = new Room(msg.room_id, msg.user_id, msg.payload, [
-      msg.user_id,
-    ]);
+    const new_room = new Room((name = msg.payload), [msg.user_id], msg.user_id);
     await db_rooms.insertOne(new_room);
     console.log("Room created");
   } else {
@@ -134,7 +136,7 @@ async function handleLEAVE(msg: Message, db_rooms: Collection<Document>) {
   }
 }
 
-function handleAUTH(msg: Message, ws: WebSocket) {
+function handleAUTH(msg: Message, ws: WsWithDetails) {
   ws.username = msg.user_id;
   console.log("User %s authenticated", ws.username);
 }

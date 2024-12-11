@@ -1,20 +1,19 @@
 import roomOptions from "./RoomOptions.ts";
+import { ObjectId } from "mongodb";
 
 export default class Room {
-  id: string;
+  _id?: ObjectId;
   name: string;
-  users: Array<string>;
+  users: string[];
   owner: string;
   options?: roomOptions;
 
   constructor(
-    id: string,
     name: string,
+    users: string[],
     owner: string,
-    users: Array<string>,
     options?: roomOptions
   ) {
-    this.id = id;
     this.owner = owner;
     this.name = name;
     this.users = users;

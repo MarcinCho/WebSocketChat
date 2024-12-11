@@ -1,23 +1,22 @@
 import { Context, Router } from "@oak/oak";
-import db from "../Database/dbConnection.ts";
-import appKey from "../Utils/appKey.ts";
-import { register } from "../Controllers/UserController.ts";
+import * as user from "../Controllers/UserController.ts";
+import { authMiddleware } from "../Middleware/authMiddleware.ts";
 
 const router = new Router();
 
-router
-  .get("/", (context: Context) => {
-    context.response.body = {
-      message: "hello world +" + appKey.algorithm.name,
-    };
-    context.response.status = 200;
-  })
-  .get("/msg", async (ctx: Context) => {
-    ctx.response.body = (await db).collection("messages").find();
-  })
-  .get("/rooms", async (ctx: Context) => {
-    ctx.response.body = (await db).collection("rooms").find();
-  })
-  .post("/register", register);
+router.post("/login", user.login).post("/register", user.register);
+
+const protectedRouter = new Router();
+
+protectedRouter.use(authMiddleware);
+
+protectedRouter.get("/check", (ctx: Context) => {
+  ctx.response.body = {
+    message: "hello world",
+  };
+  ctx.response.status = 200;
+});
+
+router.use("/protected", protectedRouter.routes());
 
 export default router;

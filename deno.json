@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@types/ws": "npm:@types/ws@^8.5.13"
+  }
+}
