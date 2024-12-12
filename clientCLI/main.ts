@@ -4,6 +4,7 @@ interface Message {
   user_id: string;
   payload: string;
   timestamp: string;
+  token: string;
 }
 
 async function collectInput(prompt: string): Promise<string> {
@@ -37,6 +38,7 @@ while (!exit.includes("exit")) {
       msg_type,
       payload,
       timestamp,
+      token: "",
     };
 
     ws.send(JSON.stringify(messageToSend));
@@ -72,6 +74,8 @@ async function authMSG(ws: WebSocket) {
     msg_type: "AUTH",
     payload: username,
     timestamp: new Date().toISOString(),
+    token:
+      "v4.local.XmqOPLWit9-3-GYl99Btkp1CMdMVK3wr5p-wVZXfKD1kRbASgQRH0NWLPGXJOoKZecI12-sMnr2PSvl_G8mMgu5WWgORToY1ziQlnzezO0C675sXckeJOmjstAZI94jM96rsdy3KvBl68oiuwp8AuT2SD4JTyuK0bJwudDaZug4XZmk_guZHPUGdMoHyYZ6sqbU_fDQKBokZkImCWsGs3FPHyENVKuudFiv-AJjSK-_cmOcL3R_EBfB6PfgpQg",
   };
 
   ws.send(JSON.stringify(messageToSend));

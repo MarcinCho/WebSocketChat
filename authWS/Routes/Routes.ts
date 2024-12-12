@@ -1,6 +1,6 @@
 import { Context, Router } from "@oak/oak";
 import * as user from "../Controllers/UserController.ts";
-import { authMiddleware } from "../Middleware/authMiddleware.ts";
+import { authMiddleware } from "../Middleware/restMiddleware.ts";
 
 const router = new Router();
 

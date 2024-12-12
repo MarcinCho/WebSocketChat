@@ -21,8 +21,8 @@ export const grantPaseto = async (user: user) => {
 
 export const decryptPaseto = (token: string) => {
   try {
-    const payload = decrypt(localKey, token);
-    return payload;
+    const { payload } = decrypt(localKey, token);
+    return true;
   } catch (error) {
     console.log(error);
     return false;

@@ -12,7 +12,16 @@ export type WebSocketMiddleware = (
 ) => void;
 
 export type MessageMiddleware = (
-  client: WsWithDetails,
   message: Message,
+  ws: WsWithDetails,
   next: (err?: Error) => void
 ) => void;
+
+export type MsgWAuth = {
+  room_id: string;
+  msg_type: string;
+  user_id: string;
+  payload: string;
+  timestamp: string;
+  token: string;
+};

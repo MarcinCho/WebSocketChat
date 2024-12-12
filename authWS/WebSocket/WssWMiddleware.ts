@@ -5,6 +5,7 @@ import Message from "../Models/Message.ts";
 import { IncomingMessage } from "@oak/oak/http_server_node";
 import {
   MessageMiddleware,
+  MsgWAuth,
   WebSocketMiddleware,
   WsWithDetails,
 } from "../Models/Types.ts";
@@ -24,6 +25,10 @@ export default class WebSocketServerWithMiddleware {
     this.middlewares.push(middleware);
   }
 
+  useMessage(middleware: MessageMiddleware) {
+    this.messageMiddlewares.push(middleware);
+  }
+
   private setupConnection() {
     this.server.on("connection", (ws: WsWithDetails, req: any) => {
       this.processMiddlewares(ws, req, (err?: Error) => {
@@ -34,6 +39,28 @@ export default class WebSocketServerWithMiddleware {
         this.attachWsHandlers(ws);
       });
     });
+  }
+
+  private processMessageMiddlewares(
+    msg: Message,
+    ws: WsWithDetails,
+    finalCallback: (err?: Error) => void
+  ) {
+    let index = 0;
+
+    const next = (err?: Error) => {
+      if (err) {
+        finalCallback(err);
+      }
+      if (index < this.messageMiddlewares.length) {
+        const middleware = this.messageMiddlewares[index];
+        index++;
+        middleware(msg, ws, next);
+      } else {
+        finalCallback();
+      }
+    };
+    next();
   }
 
   private processMiddlewares(
@@ -66,8 +93,13 @@ export default class WebSocketServerWithMiddleware {
     );
 
     ws.on("message", (data: Buffer) => {
-      const message = JSON.parse(data.toString("utf-8")) as Message;
-
+      const message = JSON.parse(data.toString("utf-8")) as MsgWAuth;
+      this.processMessageMiddlewares(message, ws, (err?: Error) => {
+        if (err) {
+          ws.close(1008, err.message);
+          return;
+        }
+      });
       handleMessage(message, this.server, ws);
     });
   }

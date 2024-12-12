@@ -24,7 +24,7 @@ export const validateJWT = async (token: string) => {
       algorithms: ["HS256"],
     });
     console.log(payload);
-    return payload;
+    return true;
   } catch (error) {
     console.log(error);
     return null;

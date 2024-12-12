@@ -1,6 +1,5 @@
 import { Context } from "@oak/oak";
-import { validateJWT } from "../AuthUtils/jwtGrant.ts";
-import { decryptPaseto } from "../AuthUtils/pasetoGrant.ts";
+import { authorize } from "../AuthUtils/authorize.ts";
 
 export const authMiddleware = async (
   ctx: Context,
@@ -15,13 +14,10 @@ export const authMiddleware = async (
     };
     return;
   }
-  if (authHeader.startsWith("v4.")) {
-    const user = decryptPaseto(authHeader);
-    console.log(user);
-    await next();
-  } else if (authHeader.startsWith("ey")) {
-    // standard JWT implementation almost always produce token with ey at the begining
-    ctx.state.user = await validateJWT(authHeader);
+  const payload = authorize(authHeader);
+  if (payload) {
+    ctx.state.user = payload;
+    console.log(payload);
     await next();
   } else {
     ctx.response.status = 401;
